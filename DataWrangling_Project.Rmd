@@ -1,0 +1,241 @@
+---
+title: "Telecom Customer Retention"
+author: "Samuel Wambasi"
+date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Overview
+
+MTN Telecom offers mobile and internet services to its customers. These services include phone, multiple lines, internet, online security, online backup, device protection, tech support, and streaming TV and movies. The management would like to get your assistance in understanding the subscribed customers. Your recommendations informed by your analysis will help them make decisions on effective customer retention programs.
+
+We have provided you with the current customer data. Since you will be working towards a descriptive report rather than a predictive one, you decide to think critically about the kind of questions that would help you craft customer retention programs. You then later use the given data set to answer your questions, but before you start, you reading, explore, clean, and analyze your dataset.
+
+## Analysis
+
+In my analysis, I will attempt to answer the following questions:
+
+1. How many customers have stayed long with the operator
+2. Which group of customers have high churn.
+3. What is the churn for each service offered.
+4. How is the churn for every contract type
+
+## 1. Loading packages 
+
+#### Installing tidyverse packages
+```{r}
+install.packages("tidyverse")
+```
+
+#### Loading tidyverse
+```{r}
+library(tidyverse)
+```
+
+## 2. Data Importation 
+
+Here I am loading the csv dataset that I uploaded to github.
+
+```{r}
+telco_df <- read.csv("https://raw.githubusercontent.com/wambasisamuel/DE_Week03_Monday/main/telecom_customer.csv")
+telco_df
+```
+
+## 3. Data Understanding
+
+Size of the dataset
+
+```{r}
+dim(telco_df)
+```
+
+The dataset contains 7050 rows and 21 columns
+
+Previewing the first 10 records
+
+```{r}
+head(telco_df, 10)
+```
+
+Previewing the last 10 records
+
+```{r}
+tail(telco_df, 10)
+```
+
+Variable names and their datatypes
+
+```{r}
+glimpse(telco_df)
+```
+
+## 4. Performing Standardisation
+
+I will get the column names in the dataset and convert them to lowercase
+
+```{r}
+names(telco_df)
+```
+```{r}
+names(telco_df) <- tolower(names(telco_df))
+names(telco_df)
+```
+
+## 5. Handling Irrelevant Data
+
+I will drop the PaymentMethod column, since I do not find it relevant in my analysis at this stage
+
+```{r}
+telco_df <- select(telco_df, -c("paymentmethod"))
+```
+
+## 6. Finding and dealing with Duplicates
+```{r}
+telco_df[duplicated(telco_df), ]
+```
+
+```{r}
+# Drop the duplicates
+dim(telco_df[duplicated(telco_df), ])
+```
+
+There are seven duplicated records. I will drop them.
+
+```{r}
+# Drop the duplicates
+telco_df <- unique(telco_df)
+dim(distinct(telco_df))
+```
+
+## 7. Missing data
+
+```{r}
+# Total missing values in each column
+colSums(is.na(telco_df))
+```
+
+Let me drop all rows having missing values
+```{r}
+telco_df <- na.omit(telco_df)
+dim(telco_df)
+```
+
+## 8. Analysis
+
+#### Customers who have stayed more than five years
+
+```{r}
+telco_df %>% 
+  filter(tenure > 60) %>%
+  head()
+```
+
+#### Group of customers with higher churn
+
+```{r}
+telco_df %>%
+  select(seniorcitizen, churn) %>%
+  group_by(seniorcitizen) %>%
+  summarize(churn_count = n())
+```
+
+Non-senior citizens have higher churn, hence customer retention campaigns should target these individuals.
+
+#### Churn per service
+
+Phone service
+
+```{r}
+services <- c("phoneservice","multiplelines","internetservice","onlinesecurity","onlinebackup","deviceprotection","techsupport","streamingtv","streamingmovies")
+
+telco_df %>%
+  select(phoneservice, churn) %>%
+  group_by(phoneservice) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Internet Service
+
+```{r}
+telco_df %>%
+  select(internetservice, churn) %>%
+  group_by(internetservice) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+
+Online Security
+
+```{r}
+telco_df %>%
+  select(onlinesecurity, churn) %>%
+  group_by(onlinesecurity) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Online Backup
+
+```{r}
+telco_df %>%
+  select(onlinebackup, churn) %>%
+  group_by(onlinebackup) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Online Backup
+
+```{r}
+telco_df %>%
+  select(deviceprotection, churn) %>%
+  group_by(deviceprotection) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Tech Support
+
+```{r}
+telco_df %>%
+  select(techsupport, churn) %>%
+  group_by(techsupport) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Streaming TV
+
+```{r}
+telco_df %>%
+  select(streamingtv, churn) %>%
+  group_by(streamingtv) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+Streaming Movies
+
+```{r}
+telco_df %>%
+  select(streamingmovies, churn) %>%
+  group_by(streamingmovies) %>%
+  filter(churn == "Yes") %>%
+  summarize(churn_count = n())
+```
+
+The Phone service has highest churn among all the services provided. The company should come up with strategies to enhance phone services, e.g through offers and promotions.
+
+#### Contract type that encourages customer retention
+
+```{r}
+telco_df %>%
+  count(contract,churn,sort=TRUE, name = "Count")
+```
+
+The Month-to-month contract is the preferred contract type by customers
+
